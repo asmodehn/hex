@@ -43,6 +43,11 @@ class Dual:
             res._i = np.add(self._i, di._i)
             return res
 
+        def __sub__(self, di: Dual.Impl):
+            res = Dual.Impl(0)
+            res._i = np.subtract(self._i, di._i)
+            return res
+
     class Var:
 
         # TODO : define types for alebraic computation here
@@ -58,10 +63,22 @@ class Dual:
             return self._i.derivative
 
         def __add__(self, other: Dual.Var):
-            return Dual.Var(self._i + other._i)
+            o = other
+            if isinstance(other, Dual.Const):
+                o = Dual.Var(Dual.Impl(o.real))
+            return Dual.Var(self._i + o._i)
+
+        def __sub__(self, other: Dual.Var):
+            o = other
+            if isinstance(other, Dual.Const):
+                o = Dual.Var(Dual.Impl(o.real))
+            return Dual.Var(self._i - o._i)
 
         def __mul__(self, other: Dual.Var):
-            return Dual.Var(self._i * other._i)
+            o = other
+            if isinstance(o, Dual.Const):
+                o = Dual.Var(Dual.Impl(o.real))
+            return Dual.Var(self._i * o._i)
 
         def __call__(self) -> Dual.Var:
             """
@@ -83,18 +100,25 @@ class Dual:
             self.derivative = 0
 
         def __add__(self, other: Dual.Var):
-            v = Dual.Var(Dual.Impl(self.real))
             o = other
             if isinstance(o, Dual.Const):
                 o = Dual.Var(Dual.Impl(o.real))
-            return v + o
+            return self() + o
+
+        def __sub__(self, other: Dual.Var):
+            o = other
+            if isinstance(o, Dual.Const):
+                o = Dual.Var(Dual.Impl(o.real))
+            return self() - o
 
         def __mul__(self, other):
-            v = Dual.Var(Dual.Impl(self.real))
             o = other
             if isinstance(o, Dual.Const):
                 o = Dual.Var(Dual.Impl(o.real))
-            return v * o
+            return self() * o
+
+        def __call__(self):
+            return Dual.Var(Dual.Impl(self.real))
 
     class Product:
         def __init__(self, d1, d2):
@@ -122,7 +146,7 @@ class Dual:
             :return:
             """
 
-            prod = Dual.Var(self.d1._i * self.d2._i)
+            prod = Dual.Var(self.d1()._i * self.d2()._i)
             return prod
 
         def __eq__(self, other):
@@ -155,7 +179,7 @@ class Dual:
             """
             # TODO : maybe mutate should be handle on the outsie if desired instead...
 
-            sum = Dual.Var(self.d1._i + self.d2._i)
+            sum = Dual.Var(self.d1()._i + self.d2()._i)
             return sum
 
         def __eq__(self, other):
@@ -163,13 +187,46 @@ class Dual:
             return isinstance(other, Dual.Sum) and self.d1 == other.d1 and self.d2 == other.d2
 
 
-    def __init__(self, i):
+    class Sub:
+        def __init__(self, d1, d2):
+            if isinstance(d1, Dual.Const):
+                d1 = Dual.Var(Dual.Impl(d1.real))
+
+            if isinstance(d2, Dual.Const):
+                d2 = Dual.Var(Dual.Impl(d2.real))
+
+            self.d1 = d1
+            self.d2=d2
+
+        @property
+        def real(self):
+            return self()._i.real
+
+        @property
+        def derivative(self):
+            return self()._i.derivative
+
+        def __call__(self) -> Dual.Var:
+            """
+            Doing the sum
+            => we cannot go back any longer
+            """
+            # TODO : maybe mutate should be handle on the outside if desired instead...
+
+            sub = Dual.Var(self.d1()._i - self.d2()._i)
+            return sub
+
+        def __eq__(self, other):
+            """ A notion of equality that depends on the computation tree"""
+            return isinstance(other, Dual.Sub) and self.d1 == other.d1 and self.d2 == other.d2
+
+
+    def __init__(self, i=0):
         """
         Create a Constant Dual Number.
         Upon operations it will change and evolve to become a full fledged variable number storing it s derivative...
         """
-        self.value = Dual.Const(i)
-
+        self.value = Dual.Const(Decimal(i))
 
     @property
     def real(self):
@@ -188,11 +245,19 @@ class Dual:
         return self.value == other.value
 
     def __mul__(self, other: Dual):
-        return self.value * other.value
+        res = Dual()
+        res.value = Dual.Product(self.value, other.value)
+        return res
 
     def __add__(self, other):
-        return self.value + other.value
+        res = Dual()
+        res.value = Dual.Sum(self.value, other.value)
+        return res
 
+    def __sub__(self, other):
+        res = Dual()
+        res.value = Dual.Sub(self.value, other.value)
+        return res
 
 # Final usecase : to keep focus...
 
@@ -249,6 +314,12 @@ class TestDualImpl(unittest.TestCase):
         tdb = Dual.Impl(53)
         assert (td + tdb).real == 42+53
         assert (td+tdb).derivative == 2
+
+    def test_sub(self):
+        td = Dual.Impl(42)
+        tdb = Dual.Impl(53)
+        assert (td - tdb).real == 42-53
+        assert (td-tdb).derivative == 0
 
 # TODO : Review Var (essentialyl the same as Impl ?)
 # TODO : Review Const based on usage...
