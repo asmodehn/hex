@@ -1,35 +1,45 @@
 import random
+import typing
 
 from dual import Dual
 
 
 def blackboxfun(i):
-    return Dual(4) + Dual(3) * i - Dual(2) * i*i + i*i*i
+    return Dual(4) + Dual(3) * i + Dual(42) * i*i - i*i*i
 
-# NTE : coefficients need to be dual to work !!!!!!
+# NOTE : coefficients need to be dual to work !!!!!!
+# => cannot be used as is on existing code
+# => could be used as imlpementation of new language,
+# where constants are implicit duals (or more, see grassman - n dimensions)
+# Benefit: Transparent Automatic optimization of simple systems :
+#   -
+
+def draw(m, M):
+    return (m + M) // 2
 
 
+def find_min(m, M) -> bool:
+    if M - m == 1:
+        print(f"Minimum in {m} {M}")
+        return True
 
-found = False
-r = random.randint(0, 100)
-
-while not found:
-    print(r)
+    r = draw(m, M)
     rr = blackboxfun(Dual(r))
+    print(f"{r} -> {rr.real} {rr.derivative}")
     if rr.derivative > 0:
-        if r == 100:
-            raise RuntimeError("nomin right side")
-        r = random.randint(r, 100)
-    elif rr.derivative < 0:
-        if r == 0:
+        if r == m:
             raise RuntimeError("nomin left side")
-        r = random.randint(0, r)
+        return find_min(m, r)
+    elif rr.derivative < 0:
+        if r == M:
+            raise RuntimeError("nomin right side")
+        return find_min(r, M)
     else: ## ==0  !! it is a local extremum
         print(f"minimum found : bbf({r}) = {rr}")
-        found = True
+        return True
 
 
-
+find_min(-100, 100)
 
 
 
