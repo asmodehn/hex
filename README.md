@@ -23,3 +23,36 @@ Graphics (2D only, potentially as a projection of 3D) :
 
 
 
+## Looking for the next programming language
+
+
+A Language, an Operating System and an Editor are different perspective on one way to do computation.
+
+We can attempt to design a **minimalistic** *distributed* language/system/interactivetool the same way, by relating features between perspectives :
+
+- Layer0 : Terminal-based
+
+|  Language              | Operating System                        | Chat               | Inspiration |
+|------------------------|-----------------------------------------|--------------------|-------------|
+| Affine Core            | Deterministic Run                       | Quality metric     | Formality   |
+| Reflexive Core         | Observable                              | Profiler           | honeycomb   |
+| Unified Representation | Implicit Patching / Deterministic Merge | Local change trace | Unison      |
+| Literal Programming    | Distributed Code / Local Run            | Mob Programming    | asciinema   |
+| Self Contained         | unikernel / VM                          | Introspective      | SmallTalk   |
+| Interactive            | Standard IO : PTY / UTF8                | Terminal UI        | IPython     |
+| Bounded                | Introspectable                          | Monitor            | Alloy       |
+| ... | | | |
+
+- Layer1 : GUI-based
+
+|  Language              | Operating System                        | Chat                    | Inspiration    |
+|------------------------|-----------------------------------------|-------------------------|----------------|
+| Category Theory        | String Diagrams display                 | Tiled Window / overlay  | i3 / Games     |
+| DSL                    | Usable via MultiParadigm code           | Channels                | Slack / forums |
+| Formally prooved safe  | Distributed Run                         | resource manager        | dark           |
+| Self-Optimizing        | Locally evolving                        | timeline & notification |   ?            |
+| Self-Updating (IO)     | ML for drivers hardware behavior        | feature activation      | rust           |
+| ... | | | |
+
+- Layer2 : Web-based
+=> kernel and plugins for Jupyter...
