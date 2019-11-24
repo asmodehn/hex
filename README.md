@@ -21,6 +21,7 @@ Graphics (2D only, potentially as a projection of 3D) :
 
 - [CSG](https://en.wikipedia.org/wiki/Constructive_solid_geometry) or [Minkowski Sum](https://en.wikipedia.org/wiki/Minkowski_addition) should give us a way to visualize combinatorial behavior of things... A categorical take on this would be useful to match with the abstraction they represent...
 
+- potentially useful lib for display stuff : http://pyglet.org/
 
 
 ## Looking for the next programming language
